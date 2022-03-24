@@ -30,16 +30,6 @@ export async function run() {
     core.debug("Installed dependencies successfully")
 
     const sshPath = path.join(os.homedir(), ".ssh")
-    if (!fs.existsSync(path.join(sshPath, "id_rsa"))) {
-      core.debug("Generating SSH keys")
-      fs.mkdirSync(sshPath, { recursive: true })
-      try {
-        await execShellCommand(`ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa; ssh-keygen -q -t ed25519 -N "" -f ~/.ssh/id_ed25519`);
-      } catch { }    
-      core.debug("Generated SSH keys successfully")
-    } else {
-      core.debug("SSH key already exists")
-    }
 
     core.debug("Configuring ssh client")
     fs.appendFileSync(path.join(sshPath, "config"), "Host *\nStrictHostKeyChecking no\nCheckHostIP no\n" +
@@ -100,7 +90,7 @@ export async function run() {
 
     const uptermServer = core.getInput("upterm-server")
     core.info(`Creating a new session. Connecting to upterm server ${uptermServer}`)
-    await execShellCommand(`tmux new -d -s upterm-wrapper -x 132 -y 43 \"upterm host --server '${uptermServer}' ${authorizedKeysParameter} --force-command 'tmux attach -t upterm' -- tmux new -s upterm -x 132 -y 43\"`)
+    await execShellCommand(`tmux new -d -s upterm-wrapper -x 132 -y 43 \"upterm host --server '${uptermServer}' --force-command 'bash' -- bash\"`)
     await sleep(2000)
     await execShellCommand("tmux send-keys -t upterm-wrapper q C-m")
     // resize terminal for largest client by default
